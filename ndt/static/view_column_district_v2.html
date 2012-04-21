@@ -1,0 +1,189 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+
+  <title>NDT</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="keywords" content="python web application" />
+  <meta name="description" content="pyramid web application" />
+  <link type="image/ico" rel="shortcut icon" href="favicon.ico" />
+
+  <link type="text/css" rel="stylesheet" href="jquery-ui/default.css" />
+  <script type="text/javascript" src="jquery-ui/js/jquery-1.7.1.min.js"></script>
+  <script type="text/javascript" src="jquery-ui/js/jquery-ui-1.8.17.custom.min.js"></script>
+
+  <script type="text/javascript" src="js/jquery.json-2.3.min.js"></script>
+
+	<style type="text/css" title="currentStyle">
+		@import "media/css/demo_page.css";
+		@import "media/css/demo_table_jui.css";
+		@import "media/css/TableTools.css";
+	</style>
+  <script type="text/javascript" src="media/js/jquery.dataTables.js"></script>
+	<script type="text/javascript" src="media/js/ZeroClipboard.js"></script>
+	<script type="text/javascript" src="media/js/TableTools.js"></script>
+
+  <link type="text/css" rel="stylesheet" href="debug/default.css" />
+  <script type="text/javascript" src="debug/debug.js"></script>
+  <script type="text/javascript" src="debug/jquery-debug.js"></script>
+
+  <link type="text/css" rel="stylesheet" href="gtb_pos/default.css" />
+  <script type="text/javascript" src="gtb_pos/gtb_pos.js"></script>
+
+  <link type="text/css" rel="stylesheet" href="j2/default.css" />
+  <script type="text/javascript" src="j2/j2.js"></script>
+
+  <script type="text/javascript">
+
+    $(document).ready( function() {
+
+      var selected_table  = '';
+      var selected_column = '';
+      var selected_value  = '';
+
+
+      $('#tables_list').put_action('tables_list', '', on_tables_list);
+
+
+      function on_tables_list(event, self) {
+        td = $(self);
+        td.text('');
+
+        var i = 0;
+        var letter = '';
+        event.rows.sort().forEach( function(val) {
+          i++;
+          if ( letter != val[0] ) {
+            if ( letter )
+              td.append('<br />');
+            letter = val[0];
+          }
+
+          if ( val )
+            var anchor = $('<a href="#">').text(val);
+          else
+            var anchor = $('<a href="#">').html('<i>пусто</i>');
+
+//        jQuery.data(anchor, "val", val);
+
+          anchor.click( function(event) {
+            $('#values_list').text('');
+
+//          val = jQuery.data(anchor, "val");
+
+            selected_table  = val;
+            selected_column = '';
+            selected_value  = '';
+
+            options = {table: selected_table, fullnames: 1};
+            $('#columns_list').put_action('columns_list', options, on_colums_list);
+          } );
+
+          td.append(anchor).append('; ');
+        } );
+
+        $('#tables_count').text(i);
+      }
+
+
+      function on_colums_list(event, self) {
+        td = $(self);
+        td.text('');
+
+        var i = 0;
+        event.rows.forEach( function(val) {
+          i++;
+
+          if ( val )
+            var anchor = $('<a href="#">').text(val);
+          else
+            var anchor = $('<a href="#">').html('<i>пусто</i>');
+
+          anchor.click( function(event) {
+            selected_column = val;
+            selected_value  = '';
+
+            options = {table: selected_table, column: selected_column, limit: 0};
+            $('#values_list').put_action('column_district', options, on_values_list);
+          } );
+
+          td.append(anchor).append('; ');
+        } );
+
+        $('#columns_count').text(i);
+      }
+
+
+      function on_values_list(event, self) {
+        td = $(self);
+        td.text('');
+
+        var i = 0;
+        event.rows.forEach( function(val) {
+          i++;
+
+          if ( val )
+            var anchor = $('<a href="#">').text(val);
+          else
+            var anchor = $('<a href="#">').html('<i>пусто</i>');
+
+          anchor.click( function(event) {
+            selected_value  = val;
+
+            td.html('<i>скрыто</i>');
+
+            filter = {};
+            filter[selected_column] = selected_value;
+            $('#table').put_datatable(selected_table, '', filter);
+          } );
+
+          td.append(anchor).append('; ');
+        } );
+
+        $('#values_count').text(i);
+      }
+
+    } )
+
+  </script>
+
+</head>
+<body>
+
+<div id="top"></div>
+
+
+<table width="100%" cellpadding="0" cellspacing="0" border="1">
+	<thead></thead>
+	<tbody>
+	  <tr>
+	    <td>Таблицы:</td>
+	    <td id="tables_count"></td>
+	    <td id="tables_list"></td>
+	  </tr>
+	  <tr>
+	    <td>Колонки:</td>
+	    <td id="columns_count"></td>
+	    <td id="columns_list"></td>
+	  </tr>
+	  <tr>
+	    <td>Значения:</td>
+	    <td id="values_count"></td>
+	    <td id="values_list"></td>
+	  </tr>
+  </tbody>
+	<tfoot></tfoot>
+</table>
+
+
+<table id="table" width="100%" cellpadding="0" cellspacing="0" border="1">
+	<thead></thead>
+	<tbody></tbody>
+	<tfoot></tfoot>
+</table>
+
+
+<div id="bottom"></div>
+
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" xmlns:tal="http://xml.zope.org/namespaces/tal">
+<head>
+
+  <title>NDT :: ${title}</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="keywords" content="python web application" />
+  <meta name="description" content="pyramid web application" />
+  <link type="image/ico" rel="shortcut icon" href="${request.static_url('ndt:static/favicon.ico')}" />
+
+  <link type="text/css" rel="stylesheet" href="${request.static_url('ndt:static/jquery-ui/default.css')}" />
+  <script type="text/javascript" src="${request.static_url('ndt:static/jquery-ui/js/jquery-1.7.1.min.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('ndt:static/jquery-ui/js/jquery-ui-1.8.17.custom.min.js')}"></script>
+
+  <link type="text/css" rel="stylesheet" href="${request.static_url('ndt:static/jquery.tablesorter/default.css')}" />
+  <script type="text/javascript" src="${request.static_url('ndt:static/jquery.tablesorter/jquery.tablesorter.js')}"></script>
+
+  <link type="text/css" rel="stylesheet" href="${request.static_url('ndt:static/debug/default.css')}" />
+  <script type="text/javascript" src="${request.static_url('ndt:static/debug/debug.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('ndt:static/debug/jquery-debug.js')}"></script>
+
+  <link type="text/css" rel="stylesheet" href="${request.static_url('ndt:static/gtb_pos/default.css')}" />
+  <script type="text/javascript" src="${request.static_url('ndt:static/gtb_pos/gtb_pos.js')}"></script>
+
+  <link type="text/css" rel="stylesheet" href="${request.static_url('ndt:static/j1/dafault.css')}" />
+</head>
+<body>
+
+<div id="top"></div>
+
+
+${structure: body}
+
+
+<tal:check condition="debug">
+<br />
+<br />
+<div id="debug" style="border:1px dashed red; padding:2px">
+  ${debug}
+</div>
+</tal:check>
+
+<span tal:condition="logged_in">
+  <br />
+  Вы вошли как: ${logged_in}<br />
+  <a href="${request.application_url}/logout">Выйти</a>
+</span>
+<span tal:condition="not: logged_in">
+  <br />
+  <a href="${request.application_url}/login">Войти</a>
+</span>
+
+
+<div id="bottom"></div>
+
+</body>
+</html>

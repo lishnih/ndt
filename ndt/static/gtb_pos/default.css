@@ -1,0 +1,27 @@
+/* Scroll to top or bottom */
+
+#gtb_pos {width: 32px; height: 60px;}
+
+#gtb_pos {
+	position: fixed;
+	right: 6px;
+	top: 45%;	
+}
+
+#gtb_top, #gtb_bottom, #toTop, #toBottom {
+	position: absolute;
+	left: 0;
+	width: 24px;
+	height: 24px;
+}
+
+#gtb_top {top: 0; background: url(button.png) no-repeat left -72px;}
+#gtb_bottom {bottom: 0; background: url(button.png) no-repeat right -72px;}
+#toTop {top: 0; background: url(button.png) no-repeat left top;}
+#toBottom {bottom: 0; background: url(button.png) no-repeat right top;}
+
+a#toTop, a#toBottom {outline: none;}
+a#toTop:hover, #toTop.toTop-click {background: url(button.png) no-repeat left -24px;}
+a#toTop:active {background: url(button.png) no-repeat left -48px;}
+a#toBottom:hover, #toBottom.toBottom-click {background: url(button.png) no-repeat right -24px;}
+a#toBottom:active {background: url(button.png) no-repeat right -48px;}

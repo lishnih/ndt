@@ -1,0 +1,41 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:tal="http://xml.zope.org/namespaces/tal">
+<head>
+  <title>${page.name}</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="keywords" content="python web application" />
+  <meta name="description" content="pyramid web application" />
+  <link rel="shortcut icon" href="${request.static_url('ndt.wiki:static/favicon.ico')}" />
+  <link rel="stylesheet" href="${request.static_url('ndt.wiki:static/pylons.css')}" type="text/css" media="screen" charset="utf-8" />
+  <!--[if lte IE 6]>
+  <link rel="stylesheet" href="${request.static_url('ndt.wiki:static/ie6.css')}" type="text/css" media="screen" charset="utf-8" />
+  <![endif]-->
+</head>
+<body>
+  <div id="wrap">
+    <div id="middle">
+      <div class="middle align-right">
+        <a tal:attributes="href edit_url" href="">Edit this page</a>
+        ::
+        <a href="${request.application_url}">FrontPage</a>
+      </div>
+    </div>
+    <div id="bottom">
+      <div class="bottom">
+        <div tal:replace="structure content">
+          Page text goes here.
+        </div>
+      </div>
+    </div>
+  </div>
+  <br />
+  <br />
+  <div id="footer">
+    <div class="footer">
+      Based on <a href="http://www.pylonsproject.org/">Pyramid</a> tutorial wiki
+    </div>
+  </div>
+</body>
+</html>

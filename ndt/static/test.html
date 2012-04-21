@@ -1,0 +1,316 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+
+  <title>NDT</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="keywords" content="python web application" />
+  <meta name="description" content="pyramid web application" />
+  <link type="image/ico" rel="shortcut icon" href="favicon.ico" />
+
+  <link type="text/css" rel="stylesheet" href="jquery-ui/default.css" />
+  <script type="text/javascript" src="jquery-ui/js/jquery-1.7.1.min.js"></script>
+  <script type="text/javascript" src="jquery-ui/js/jquery-ui-1.8.17.custom.min.js"></script>
+
+  <script type="text/javascript" src="js/jquery.json-2.3.min.js"></script>
+
+	<style type="text/css" title="currentStyle">
+		@import "media/css/demo_page.css";
+		@import "media/css/demo_table_jui.css";
+		@import "media/css/TableTools.css";
+	</style>
+  <script type="text/javascript" src="media/js/jquery.dataTables.js"></script>
+	<script type="text/javascript" src="media/js/ZeroClipboard.js"></script>
+	<script type="text/javascript" src="media/js/TableTools.js"></script>
+
+  <link type="text/css" rel="stylesheet" href="debug/default.css" />
+  <script type="text/javascript" src="debug/debug.js"></script>
+  <script type="text/javascript" src="debug/jquery-debug.js"></script>
+
+  <link type="text/css" rel="stylesheet" href="gtb_pos/default.css" />
+  <script type="text/javascript" src="gtb_pos/gtb_pos.js"></script>
+
+  <link type="text/css" rel="stylesheet" href="j2/default.css" />
+  <script type="text/javascript" src="j2/j2.js"></script>
+
+  <script type="text/javascript" src="js/jquery.form.js"></script>
+
+  <script type="text/javascript">
+
+    $(document).ready( function() {
+
+      // Список команд
+      $('#actions_list').put_action('actions_list', '', function (event, self) {
+        $(self).html('Список команд:<br />');
+        event.rows.forEach( function(val) {
+          anchor = $('<a href="#">').text(val);
+          anchor.click( function(event) {
+            action = event.target.innerText;
+            $('#description').put_action('action_params_list', {req_action: val}, function (event, self) {
+              option_inputs = $('form div#options input.option');
+              option_inputs.attr('value', '');
+              if ( event.rows )
+                event.rows.forEach( function(val, i) {
+                  option_inputs.eq(i).attr('value', val);
+                } );
+              var description = '<b>Описание:</b><br />' + event.description +
+                    '<br /><br /><b>Параметры:</b><br />' + event.rows;
+              return description;
+            } );
+            $('input#action').attr('value', action);
+          } );
+          $(self).append(anchor).append('<br />');
+        } );
+
+      } );
+
+
+      // Список таблиц
+      $('#tables_list').put_action('tables_list', '', function (event) {
+        var content = 'Список таблиц:<br />\n';
+        event.rows.forEach( function(val) {
+          content += val + ', ';
+        } );
+        return content;
+      } );
+
+
+      // Биндим на кнопку функцию расширенной обработки формы
+      $("#action_submit").click( action_submit );
+
+
+      $("#clearform").click( function() { $("#action_form").clearForm(); } );
+      $("#clearvalues").click( function() { $("#action_form .value").clearFields(); } );
+
+      var options = {
+        dataType: "json",
+    //  semantic: true,
+        target: "#output",              // элемент, который будет обновлен по ответу сервера
+        beforeSubmit: proceedRequest,   // функция, вызываемая перед передачей
+        success: showResponse,          // функция, вызываемая при получении ответа
+    //  timeout: 3000                   // тайм-аут
+      };
+
+      // привязываем событие submit к форме
+      $('#action_form').submit( function() {
+        $(this).ajaxSubmit(options);
+        // !!! Важно !!!
+        // всегда возвращаем false, чтобы предупредить стандартные
+        // действия браузера (переход на страницу 'action')
+        return false;
+      } );
+    } );
+
+
+
+    // Расширенная отправка
+    function action_submit(event) {
+      debug();
+
+      var action_form    = $('form#action_form');
+      var action_name    = $('input#action', action_form)[0].value;
+      var options_inputs = $('div#options :input', action_form);
+
+      var formData = [];
+      formData[0] = {'name': 'action', 'value': action_name, 'type': 'text'}
+
+      for (var i = 0, j = 0; i < options_inputs.length; i += 2)
+        if ( options_inputs[i].value ) {
+          j++;
+          name = options_inputs[i].value;
+          value = options_inputs[i+1].value;
+          formData[j] = {'name': name, 'value': value, 'type': 'text'};
+        }
+
+
+      var form_dict      = $('div.dict', action_form);
+      var dict_name      = $('input.dict', form_dict)[0].value;
+      var items_inputs   = $('div :input', form_dict);
+
+      var dict = {};
+      for (var i = 0, k = 0; i < items_inputs.length; i += 3)
+        if ( items_inputs[i].value ) {
+          name = items_inputs[i].value;
+          condition = items_inputs[i+1].value;
+          value = items_inputs[i+2].value;
+          if (condition=='=')
+            dict[name] = value;
+          else
+            dict[name] = [condition, value];
+          k++;
+        }
+      if (Object.keys(dict).length) {
+        j++;
+        formData[j] = {'name': dict_name, 'value': $.toJSON(dict)};
+      }
+
+
+      var queryString = $.param(formData);
+      $('#querystring').text(queryString);
+
+      $.post( '/j2', formData, function(data, textStatus, jqXHR) {showResponse(data, textStatus, jqXHR)}, "json" );
+    }
+
+
+
+    // вызов перед передачей данных
+    function proceedRequest(formData, jqForm, options) {
+    // formData - массив; здесь используется $.param чтобы преобразовать его в строку для вывода в alert(),
+    // (только в демонстрационных целях), но в самом плагине jQuery Form это совершается автоматически.
+
+    // jqForm это jQuery объект, содержащий элементы формы.
+    // Для доступа к элементам формы используйте
+    // var formElement = jqForm[0];
+
+      debug();
+
+      var options_pairs = formData.splice(1, formData.length - 1);
+      for (var i = 0, j = 0; i < options_pairs.length; i += 2)
+        if ( options_pairs[i].value ) {
+          j++;
+          name = options_pairs[i].value;
+          value = options_pairs[i+1].value;
+          formData[j] = {'name': name, 'value': value, 'type': 'text'};
+        }
+
+      var queryString = $.param(formData);
+      $('#querystring').text(queryString);
+
+      // здесь можно вернуть false чтобы запретить отправку формы;
+      // любое отличное от false значение разрешит отправку формы.
+      return true;
+    }
+
+    // вызов после получения ответа
+    function showResponse(responseText, statusText) {
+      // для обычного html ответа, первый аргумент - свойство responseText
+      // объекта XMLHttpRequest
+
+      // если применяется метод ajaxSubmit (или ajaxForm) с использованием опции dataType
+      // установленной в 'xml', первый аргумент - свойство responseXML
+      // объекта XMLHttpRequest
+
+      // если применяется метод ajaxSubmit (или ajaxForm) с использованием опции dataType
+      // установленной в 'json', первый аргумент - объек json, возвращенный сервером.
+
+      $('#statustext').text(statusText);
+      debug(responseText);
+    }
+
+  </script>
+
+</head>
+<body>
+
+<div id="top"></div>
+
+
+<div id="gtb_pos">
+  <div id="gtb_top" class="png">
+    <a id="toTop" class="png" href="#top" style="display: block">
+      <span style="display: none;">&uArr; Наверх</span>
+    </a>
+  </div>
+  <div id="gtb_bottom" class="png">
+    <a id="toBottom" class="png" href="#bottom" style="display: block">
+      <span style="display: none;">&dArr; Вниз</span>
+    </a>
+  </div>
+</div>
+
+
+
+<table width="100%" cellpadding="0" cellspacing="0" border="1">
+  <tr>
+    <th width="40%">Форма</th>
+    <th width="*">Шаблоны</th>
+    <th width="40%">Краткое описание</th>
+  </tr>
+  <tr>
+    <td>
+      <form id="action_form" action="/j2" method="get">
+        Запрос: <input id="action" type="text" name="action" value="table_view" /><br />
+        <div id="options">
+          <input class="option" type="text" name="option" /><input class="value" type="text" name="value" /><br />
+          <input class="option" type="text" name="option" /><input class="value" type="text" name="value" /><br />
+          <input class="option" type="text" name="option" /><input class="value" type="text" name="value" /><br />
+          <input class="option" type="text" name="option" /><input class="value" type="text" name="value" /><br />
+          <input class="option" type="text" name="option" /><input class="value" type="text" name="value" /><br />
+          <input class="option" type="text" name="option" /><input class="value" type="text" name="value" /><br />
+          <input class="option" type="text" name="option" /><input class="value" type="text" name="value" /><br />
+        </div>
+        <br />
+        <div class="dict">
+          Массив условий: <input class="dict" type="text" name="dict" value="filter_json" /><br />
+          <div id="items">
+            <input type="text" name="item" />
+              <select>
+                <option selected>=</option>
+                <option>!=</option>
+                <option>like</option>
+                <option>&lt;</option>
+                <option>&lt;=</option>
+                <option>&gt;</option>
+                <option>&gt;=</option>
+              </select>
+            <input class="value" type="text" name="value" /><br />
+            <input type="text" name="item" />
+              <select>
+                <option selected>=</option>
+                <option>!=</option>
+                <option>like</option>
+                <option>&lt;</option>
+                <option>&lt;=</option>
+                <option>&gt;</option>
+                <option>&gt;=</option>
+              </select>
+            <input class="value" type="text" name="value" /><br />
+            <input type="text" name="item" />
+              <select>
+                <option selected>=</option>
+                <option>!=</option>
+                <option>like</option>
+                <option>&lt;</option>
+                <option>&lt;=</option>
+                <option>&gt;</option>
+                <option>&gt;=</option>
+              </select>
+            <input class="value" type="text" name="value" /><br />
+          </div>
+        </div>
+        <br />
+        <input type="submit" /> <a id="action_submit" href="#">Расширенная отправка (для массивов)</a><br />
+      </form>
+    </td>
+    <td>
+      <div id="actions_list"></div>
+    </td>
+    <td>
+      <div id="description"></div>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <a id="clearform" href="#">Очистить</a><br />
+      <a id="clearvalues" href="#">Сбросить значения</a>
+    </td>
+    <td>
+      <div id="tables_list"></div>
+    </td>
+    <td>
+      Отправлено: <div id="querystring"><br /></div>
+      Статус ответа сервера: <div id="statustext"><br /></div>
+    </td>
+  </tr>
+</table>
+
+
+
+<div id="output"></div>
+
+
+
+<div id="bottom"></div>
+
+</body>
+</html>
