@@ -77,10 +77,10 @@ jQuery.fn.extend({
       
         var tableisempty = true;
       
-        if (typeof tabledata.thead != "undefined") {
+        if (typeof tabledata.columns != "undefined") {
           tableisempty = false;
           jself.append('<thead><tr>');
-          tabledata.thead.forEach( function(val) {
+          tabledata.columns.forEach( function(val) {
             $("thead tr", self).append('<th>' + val + '</th>');
           } )
         }

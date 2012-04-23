@@ -4,6 +4,7 @@
 
 from ..security_db import user_table_iter
 from ..request_interface import *
+from ..response_interface import *
 from .query_interface import *
 
 
@@ -99,13 +100,12 @@ def table_count_action(userid, request_items, response):
         filter = filter_dict,
     )
 
-    full_rows_count, filtered_rows_count, query_str = qi_query_count(**query_params)
+    table_info, error = qi_query(**query_params)
 
-    response['full_rows_count']     = full_rows_count
-    response['filtered_rows_count'] = filtered_rows_count
-    response['count']        = filtered_rows_count
-    response['query_str']    = query_str
+    response.update(table_info)
     response['query_params'] = query_params
+    if error:
+        response['error'] = error
 
 
 def table_view_action(userid, request_items, response):
@@ -152,7 +152,7 @@ def table_view_action(userid, request_items, response):
 #       columns_except = columns_except,
     )
 
-    table_info, rows = qi_query(**query_params)
+    table_info, rows, error = qi_query(**query_params)
 
     response.update(table_info)
     response['query_params'] = query_params
@@ -163,6 +163,9 @@ def table_view_action(userid, request_items, response):
         response['aaData'] = rows
     else:
         response['rows'] = rows
+
+    if error:
+        response['error'] = error
 
 
 def column_district_action(userid, request_items, response):
@@ -183,7 +186,7 @@ def column_district_action(userid, request_items, response):
         limit  = limit_option,
     )
 
-    column_info, rows = qi_district_query(**query_params)
+    column_info, rows, error = qi_district_query(**query_params)
 
     response.update(column_info)
     response['query_params'] = query_params
@@ -194,3 +197,6 @@ def column_district_action(userid, request_items, response):
         response['aaData'] = [[i] for i in rows]
     else:
         response['rows'] = rows
+
+    if error:
+        response['error'] = error

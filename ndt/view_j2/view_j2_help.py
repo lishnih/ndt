@@ -3,7 +3,7 @@
 # Stan 2012-02-29
 
 from ..request_interface import *
-from .view_j2_funcs import *
+from ..response_interface import *
 
 
 def actions_list_action(request_items, response):

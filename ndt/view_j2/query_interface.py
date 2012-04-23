@@ -66,6 +66,9 @@ def qi_query_count(userid, tables, search=None, filter={}):
     for table in tables:
         classes.append(get_user_table_data(userid, table))
 
+    if None in classes:
+        return {}, u'Некоторые таблицы недоступны: {!r}'.format(tables)
+
     query = UserSession.query(*classes)
 
     full_rows_count = query.count()
@@ -102,7 +105,12 @@ def qi_query_count(userid, tables, search=None, filter={}):
 
     filtered_rows_count = query.count()
 
-    return full_rows_count, filtered_rows_count, unicode(query)
+    return dict(
+        full_rows_count     = full_rows_count,
+        filtered_rows_count = filtered_rows_count,
+#       rows_count          = rows_count,
+        query = unicode(query)
+    ), None
 
 
 def qi_query(userid, tables, search=None, filter={}, sorting=[], offset=None, limit=None, columns=None):
@@ -114,6 +122,9 @@ def qi_query(userid, tables, search=None, filter={}, sorting=[], offset=None, li
     classes = []
     for table in tables:
         classes.append(get_user_table_data(userid, table))
+
+    if None in classes:
+        return {}, [], u'Некоторые таблицы недоступны: {!r}'.format(tables)
 
     query = UserSession.query(*classes)
 
@@ -185,16 +196,19 @@ def qi_query(userid, tables, search=None, filter={}, sorting=[], offset=None, li
     return dict(
         full_rows_count     = full_rows_count,
         filtered_rows_count = filtered_rows_count,
-        count = rows_count,
-        thead = th_list,
-        query = unicode(query)
-    ), td_list
+        rows_count          = rows_count,
+        columns = th_list,
+        query   = unicode(query)
+    ), td_list, None
 
 
 def qi_district_query(userid, table, column, filter={}, sorting=[], offset=None, limit=None):
     UserSession = get_user_session(userid)
 
     columns_dict = qi_columns_dict(userid, table)
+
+    if column not in columns_dict:
+        return {}, [], u'Колонка недоступна: {!r}'.format(column)
 
     query = UserSession.query(distinct(columns_dict[column]))
 
@@ -236,6 +250,6 @@ def qi_district_query(userid, table, column, filter={}, sorting=[], offset=None,
     return dict(
         full_rows_count     = full_rows_count,
         filtered_rows_count = filtered_rows_count,
-        rows_count = rows_count,
+        rows_count          = rows_count,
         query      = unicode(query)
-    ), column_list
+    ), column_list, None
