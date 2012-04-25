@@ -12,8 +12,19 @@
   <script type="text/javascript" src="${request.static_url('ndt:static/jquery-ui/js/jquery-1.7.1.min.js')}"></script>
   <script type="text/javascript" src="${request.static_url('ndt:static/jquery-ui/js/jquery-ui-1.8.17.custom.min.js')}"></script>
 
+  <script type="text/javascript" src="${request.static_url('ndt:static/js/jquery.json-2.3.min.js')}"></script>
+
   <link type="text/css" rel="stylesheet" href="${request.static_url('ndt:static/jquery.tablesorter/default.css')}" />
   <script type="text/javascript" src="${request.static_url('ndt:static/jquery.tablesorter/jquery.tablesorter.js')}"></script>
+
+  <style type="text/css" title="currentStyle">
+    @import "${request.static_url('ndt:static/media/css/demo_page.css')}";
+    @import "${request.static_url('ndt:static/media/css/demo_table_jui.css')}";
+    @import "${request.static_url('ndt:static/media/css/TableTools.css')}";
+  </style>
+  <script type="text/javascript" src="${request.static_url('ndt:static/media/js/jquery.dataTables.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('ndt:static/media/js/ZeroClipboard.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('ndt:static/media/js/TableTools.js')}"></script>
 
   <link type="text/css" rel="stylesheet" href="${request.static_url('ndt:static/debug/default.css')}" />
   <script type="text/javascript" src="${request.static_url('ndt:static/debug/debug.js')}"></script>
@@ -22,7 +33,9 @@
   <link type="text/css" rel="stylesheet" href="${request.static_url('ndt:static/gtb_pos/default.css')}" />
   <script type="text/javascript" src="${request.static_url('ndt:static/gtb_pos/gtb_pos.js')}"></script>
 
-  <link type="text/css" rel="stylesheet" href="${request.static_url('ndt:static/j1/dafault.css')}" />
+  <link type="text/css" rel="stylesheet" href="${request.static_url('ndt:static/j2/default.css')}" />
+  <script type="text/javascript" src="${request.static_url('ndt:static/j2/j2.js')}"></script>
+
 </head>
 <body>
 

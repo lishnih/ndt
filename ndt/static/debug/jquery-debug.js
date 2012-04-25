@@ -18,7 +18,7 @@ jQuery( function($) {
     .append('<li><a href="#">Меню</a>')
     .appendTo('div#debug div#menu');
 
-	$('<ul/>')
+  $('<ul/>')
     .append('<li><a href="#" id="debugmenu_clearall">Очистить</a></li>')
     .append('<li><a href="#" id="debugmenu_append_something">Добавить текст</a></li>')
     .append('<li><a href="#" id="debugmenu_hide">Скрыть</a></li>')
@@ -101,7 +101,7 @@ function debug(message) {
     $('div#debug div#log').html('');
   } else {
     message = var_dump1(message);
-		$('<div/>').html(message).prependTo('div#debug div#log');
+    $('<div/>').html(message).prependTo('div#debug div#log');
 //  $("div#debug").scrollTop(0);
 //  $('div#debug').show();
   }

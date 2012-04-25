@@ -48,7 +48,7 @@ jQuery.fn.extend({
   // присваивается вызываемому элементу/элементам
   put_action: function(action, options, callback) {
     return this.each( function() {
-	    var self = this;
+      var self = this;
 
       request_action(action, options, function (event, xhr, ajaxOptions) {
         content = callback.call(this, event, self);
@@ -62,34 +62,33 @@ jQuery.fn.extend({
 
   put_table: function(table, columns, filter) {
     return this.each( function() {
-	    var self = this;
+      var self = this;
       var jself = $(self);
 
-      table_id = "#table";
+      var table_id = self.id;
+      var table_info_id = table_id + '_info';
+
       var filter_json = $.toJSON(filter);
-      options = {table: table, limit: 100, filter_json: filter_json};
+      options = {tables: table, filter_json: filter_json};
       request_action('table_view', options, function(event, xhr, ajaxOptions) {
-  
-        $('#filter_count').text(event.content.filter_count);
-  
-        var tabledata = event.content
+
         jself.html('');
       
         var tableisempty = true;
       
-        if (typeof tabledata.columns != "undefined") {
+        if (typeof event.columns != "undefined") {
           tableisempty = false;
           jself.append('<thead><tr>');
-          tabledata.columns.forEach( function(val) {
+          event.columns.forEach( function(val) {
             $("thead tr", self).append('<th>' + val + '</th>');
           } )
         }
       
-        if (typeof tabledata.tbody != "undefined") {
+        if (typeof event.rows != "undefined") {
           tableisempty = false;
           jself.append('<tbody>');
           var i = 0;
-          tabledata.tbody.forEach( function(tr_vals) {
+          event.rows.forEach( function(tr_vals) {
             $("tbody", self).append('<tr id="tr' + i + '">');
             tr_vals.forEach( function(val) {
               $(" tbody tr#tr" + i, self).append('<td>' + val + '</td>');
@@ -98,7 +97,7 @@ jQuery.fn.extend({
           } )
         }
       
-        if (tableisempty) {
+        if ( tableisempty ) {
           $(table).html('Данные отсутствуют!');
           return;
         }
@@ -110,6 +109,17 @@ jQuery.fn.extend({
             $(target_tr).toggleClass('highlighted');
           } );
         });
+        jself.addClass('tablesorter');
+
+        if ( event.filtered_rows_count == event.full_rows_count )
+          $('#' + table_info_id)
+            .text('Показано: {0} из {1}'
+            .format(event.rows_count, event.filtered_rows_count, event));
+        else
+          $('#' + table_info_id)
+            .text('Показано: {0} из {1} (до фильтрации: {2})'
+            .format(event.rows_count, event.filtered_rows_count, event.full_rows_count));
+
       });
 
     } );
@@ -133,7 +143,7 @@ jQuery.fn.extend({
       search = '';
 
     return this.each( function() {
-	    var self = this;
+      var self = this;
       var jself = $(self);
 
       var thead = $('thead', self);
@@ -172,15 +182,15 @@ jQuery.fn.extend({
 
       // Загружаем таблицу
       oTable = jself.dataTable( {
-				"bJQueryUI": true,
-				"sDom": '<"H"lfrip>t<"F"><"clear">T<"clear">',
+        "bJQueryUI": true,
+        "sDom": '<"H"lfrip>t<"F"><"clear">T<"clear">',
 
         "bAutoWidth": false,
         "bDestroy": true,
 
-    		"bProcessing": true,
-    		"bServerSide": true,
-    		"sAjaxSource": json_url,
+        "bProcessing": true,
+        "bServerSide": true,
+        "sAjaxSource": json_url,
 
 //     "bScrollInfinite": true,
 //     "bScrollCollapse": true,
@@ -203,10 +213,10 @@ jQuery.fn.extend({
 //         }
 //         //endFor
 //         aoData.push({ "name": "sColNames", "value": arrCols.join("|") });
-    		"oSearch": {
-    		  "sSearch": search,
-    		},
-    		"fnServerParams": function ( aoData ) {
+        "oSearch": {
+          "sSearch": search,
+        },
+        "fnServerParams": function ( aoData ) {
           var iDisplayStart  = this.fnSettings()._iDisplayStart;
           var iDisplayLength = this.fnSettings()._iDisplayLength;
 //        var sSearch        = this.fnSettings()._sSearch;

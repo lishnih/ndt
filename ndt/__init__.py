@@ -14,7 +14,7 @@ def main(global_config, **settings):
     """ Функция возвращает Pyramid WSGI приложение """
 
     # Инициализация БД
-#     users_init(settings)
+#   users_init(settings)
 
     config = Configurator(settings=settings, root_factory=RootFactory)
 
@@ -32,8 +32,8 @@ def main(global_config, **settings):
 #   config.add_route('tables', '/view/*subpath')
 
     # json
-    config.add_route('j1',  '/j1')
-    config.add_route('j2',  '/j2')
+#   config.add_route('j1', '/j1')
+    config.add_route('j2', '/j2')
 
     # Тестирование
     config.add_route('hello', '/hello/{name}')

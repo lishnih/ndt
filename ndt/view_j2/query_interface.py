@@ -82,8 +82,10 @@ def qi_query_count(userid, tables, search=None, filter={}):
 
     for key, value in filter.items():
         if key in columns_dict:
-            if isinstance(value, basestring):
+            if isinstance(value, basestring) or isinstance(value, int):
                 query = query.filter(columns_dict[key] == value)
+            elif isinstance(value, float):
+                query = query.filter(columns_dict[key].like(value))
             else:
                 condition, value = value
                 if condition == '=' or condition == '==':
@@ -154,8 +156,10 @@ def qi_query(userid, tables, search=None, filter={}, sorting=[], offset=None, li
 
     for key, value in filter.items():
         if key in columns_dict:
-            if isinstance(value, basestring):
+            if isinstance(value, basestring) or isinstance(value, int):
                 query = query.filter(columns_dict[key] == value)
+            elif isinstance(value, float):
+                query = query.filter(columns_dict[key].like(value))
             else:
                 condition, value = value
                 if condition == '=' or condition == '==':
@@ -177,7 +181,7 @@ def qi_query(userid, tables, search=None, filter={}, sorting=[], offset=None, li
 
     filtered_rows_count = query.count()
 
-    rows = query.slice(offset, offset + limit) if limit else \
+    rows = query.slice(offset, offset + limit) if limit > 0 else \
            query.offset(offset)
     rows_count = rows.count()
 
@@ -216,8 +220,10 @@ def qi_district_query(userid, table, column, filter={}, sorting=[], offset=None,
 
     for key, value in filter.items():
         if key in columns_dict:
-            if isinstance(value, basestring):
+            if isinstance(value, basestring) or isinstance(value, int):
                 query = query.filter(columns_dict[key] == value)
+            elif isinstance(value, float):
+                query = query.filter(columns_dict[key].like(value))
             else:
                 condition, value = value
                 if condition == '=' or condition == '==':
@@ -239,7 +245,7 @@ def qi_district_query(userid, table, column, filter={}, sorting=[], offset=None,
 
     filtered_rows_count = query.count()
 
-    rows = query.slice(offset, offset + limit) if limit else \
+    rows = query.slice(offset, offset + limit) if limit > 0 else \
            query.offset(offset)
     rows_count = rows.count()
 

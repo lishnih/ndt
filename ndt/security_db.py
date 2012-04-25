@@ -37,8 +37,9 @@ USERS_DB_URLS = {
                 },
     'qc2':      {
                   'avk':      'sqlite:///D:/opt/home/a94001-2/data/avk.sqlite',
-                  'request':  'sqlite:///D:/opt/home/a94001-2/data/request.sqlite',
                   'delivery': 'sqlite:///D:/opt/home/a94001-2/data/delivery.sqlite',
+                  'mto':      'sqlite:///D:/opt/home/a94001-2/data/mto.sqlite',
+                  'request':  'sqlite:///D:/opt/home/a94001-2/data/request.sqlite',
                 },
     'welding2': {
                   'schemes': 'sqlite:///D:/opt/home/a94001-2/data/schemes.sqlite',
@@ -113,7 +114,7 @@ def get_user_session(userid):
 def user_table_iter(userid):
     if userid in USERS:
         tables_dict = USERS_TABLES.get(userid, {})
-        for table in tables_dict.keys():
+        for table in sorted(tables_dict.keys()):
             yield table
 
 

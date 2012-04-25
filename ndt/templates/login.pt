@@ -8,19 +8,19 @@
   <meta name="description" content="pyramid web application" />
   <link type="image/ico" rel="shortcut icon" href="${request.static_url('ndt:static/favicon.ico')}" />
 
-  <link type="text/css" rel="stylesheet" href="${request.static_url('ndt:static/j1/dafault.css')}" />
+  <link type="text/css" rel="stylesheet" href="${request.static_url('ndt:static/j2/default.css')}" />
+
 </head>
 <body>
 
-  <b>Login</b><br/>
+  <b>Login</b><br />
   <span tal:replace="message"/>
 
   <form action="${url}" method="post">
-    <input type="hidden" name="came_from" value="${came_from}"/>
-    <input type="text" name="login" value="${login}"/><br/>
-    <input type="password" name="password"
-           value="${password}"/><br/>
-    <input type="submit" name="form.submitted" value="Log In"/>
+    <input type="hidden" name="came_from" value="${came_from}" />
+    <input type="text" name="login" value="${login}" /><br />
+    <input type="password" name="password" value="${password}"/><br />
+    <input type="submit" name="form.submitted" value="Log In" />
   </form>
 
 </body>

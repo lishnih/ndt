@@ -11,7 +11,10 @@ def ri_get_str(request_items, name, default = ''):
 
 def ri_get_int(request_items, name, default = 0):
     atom = ri_get_str(request_items, name)
-    return int(atom) if atom.isdigit() else default
+    try:
+        return int(atom)
+    except ValueError:
+        return default
 
 
 def ri_get_tuple(request_items, name, default = ()):

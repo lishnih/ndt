@@ -17,6 +17,15 @@
   <link type="text/css" rel="stylesheet" href="jquery.tablesorter/default.css" />
   <script type="text/javascript" src="jquery.tablesorter/jquery.tablesorter.js"></script>
 
+  <style type="text/css" title="currentStyle">
+    @import "media/css/demo_page.css";
+    @import "media/css/demo_table_jui.css";
+    @import "media/css/TableTools.css";
+  </style>
+  <script type="text/javascript" src="media/js/jquery.dataTables.js"></script>
+  <script type="text/javascript" src="media/js/ZeroClipboard.js"></script>
+  <script type="text/javascript" src="media/js/TableTools.js"></script>
+
   <link type="text/css" rel="stylesheet" href="debug/default.css" />
   <script type="text/javascript" src="debug/debug.js"></script>
   <script type="text/javascript" src="debug/jquery-debug.js"></script>
@@ -24,8 +33,10 @@
   <link type="text/css" rel="stylesheet" href="gtb_pos/default.css" />
   <script type="text/javascript" src="gtb_pos/gtb_pos.js"></script>
 
-  <link type="text/css" rel="stylesheet" href="j1/default.css" />
-  <script type="text/javascript" src="j1/j1.js"></script>
+  <script type="text/javascript" src="js/string.format-1.0.packed.js"></script>
+
+  <link type="text/css" rel="stylesheet" href="j2/default.css" />
+  <script type="text/javascript" src="j2/j2.js"></script>
 
   <script type="text/javascript">
 
@@ -36,16 +47,16 @@
       var selected_value  = '';
 
 
-      $('#tables_list').put_action('tables_list', '', on_tables_list, 'list');
+      $('#tables_list').put_action('tables_list', '', on_tables_list);
 
 
-      function on_tables_list(event_content, self) {
+      function on_tables_list(event, self) {
         td = $(self);
         td.text('');
 
         var i = 0;
         var letter = '';
-        event_content.sort().forEach( function(val) {
+        event.rows.forEach( function(val) {
           i++;
           if ( letter != val[0] ) {
             if ( letter )
@@ -53,24 +64,18 @@
             letter = val[0];
           }
 
-          if ( val )
-            var anchor = $('<a href="#">').text(val);
-          else
-            var anchor = $('<a href="#">').html('<i>пусто</i>');
-
-//        jQuery.data(anchor, "val", val);
+          var anchor = val ? $('<a href="#">').text(val) :
+                             $('<a href="#">').html('<i>пусто</i>');
 
           anchor.click( function(event) {
             $('#values_list').text('');
-
-//          val = jQuery.data(anchor, "val");
 
             selected_table  = val;
             selected_column = '';
             selected_value  = '';
 
             options = {table: selected_table, fullnames: 1};
-            $('#columns_list').put_action('columns_list', options, on_colums_list, 'list');
+            $('#columns_list').put_action('columns_list', options, on_colums_list);
           } );
 
           td.append(anchor).append('; ');
@@ -80,25 +85,23 @@
       }
 
 
-      function on_colums_list(event_content, self) {
+      function on_colums_list(event, self) {
         td = $(self);
         td.text('');
 
         var i = 0;
-        event_content.forEach( function(val) {
+        event.rows.forEach( function(val) {
           i++;
 
-          if ( val )
-            var anchor = $('<a href="#">').text(val);
-          else
-            var anchor = $('<a href="#">').html('<i>пусто</i>');
+          var anchor = val ? $('<a href="#">').text(val) :
+                             $('<a href="#">').html('<i>пусто</i>');
 
           anchor.click( function(event) {
             selected_column = val;
             selected_value  = '';
 
             options = {table: selected_table, column: selected_column, limit: 0};
-            $('#values_list').put_action('column_district', options, on_values_list, 'elist');
+            $('#values_list').put_action('column_district', options, on_values_list);
           } );
 
           td.append(anchor).append('; ');
@@ -108,18 +111,16 @@
       }
 
 
-      function on_values_list(event_content, self) {
+      function on_values_list(event, self) {
         td = $(self);
         td.text('');
 
         var i = 0;
-        event_content.rows.forEach( function(val) {
+        event.rows.forEach( function(val) {
           i++;
 
-          if ( val )
-            var anchor = $('<a href="#">').text(val);
-          else
-            var anchor = $('<a href="#">').html('<i>пусто</i>');
+          var anchor = val ? $('<a href="#">').text(val) :
+                             $('<a href="#">').html('<i>пусто</i>');
 
           anchor.click( function(event) {
             selected_value  = val;
@@ -148,33 +149,35 @@
 
 
 <table width="100%" cellpadding="0" cellspacing="0" border="1">
-	<thead></thead>
-	<tbody>
-	  <tr>
-	    <td>Таблицы:</td>
-	    <td id="tables_count"></td>
-	    <td id="tables_list"></td>
-	  </tr>
-	  <tr>
-	    <td>Колонки:</td>
-	    <td id="columns_count"></td>
-	    <td id="columns_list"></td>
-	  </tr>
-	  <tr>
-	    <td>Значения:</td>
-	    <td id="values_count"></td>
-	    <td id="values_list"></td>
-	  </tr>
+  <thead></thead>
+  <tbody>
+    <tr>
+      <td>Таблицы:</td>
+      <td id="tables_count"></td>
+      <td id="tables_list"></td>
+    </tr>
+    <tr>
+      <td>Колонки:</td>
+      <td id="columns_count"></td>
+      <td id="columns_list"></td>
+    </tr>
+    <tr>
+      <td>Значения:</td>
+      <td id="values_count"></td>
+      <td id="values_list"></td>
+    </tr>
   </tbody>
-	<tfoot></tfoot>
+  <tfoot></tfoot>
 </table>
 
 
-<table id="table" class="tablesorter">
-	<thead></thead>
-	<tbody></tbody>
-	<tfoot></tfoot>
+<table id="table" width="100%" cellpadding="0" cellspacing="0" border="0">
+  <thead></thead>
+  <tbody></tbody>
+  <tfoot></tfoot>
 </table>
+
+<div id="table_info"></div>
 
 
 <div id="bottom"></div>

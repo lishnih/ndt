@@ -14,14 +14,17 @@
 
   <script type="text/javascript" src="js/jquery.json-2.3.min.js"></script>
 
-	<style type="text/css" title="currentStyle">
-		@import "media/css/demo_page.css";
-		@import "media/css/demo_table_jui.css";
-		@import "media/css/TableTools.css";
-	</style>
+  <link type="text/css" rel="stylesheet" href="jquery.tablesorter/default.css" />
+  <script type="text/javascript" src="jquery.tablesorter/jquery.tablesorter.js"></script>
+
+  <style type="text/css" title="currentStyle">
+    @import "media/css/demo_page.css";
+    @import "media/css/demo_table_jui.css";
+    @import "media/css/TableTools.css";
+  </style>
   <script type="text/javascript" src="media/js/jquery.dataTables.js"></script>
-	<script type="text/javascript" src="media/js/ZeroClipboard.js"></script>
-	<script type="text/javascript" src="media/js/TableTools.js"></script>
+  <script type="text/javascript" src="media/js/ZeroClipboard.js"></script>
+  <script type="text/javascript" src="media/js/TableTools.js"></script>
 
   <link type="text/css" rel="stylesheet" href="debug/default.css" />
   <script type="text/javascript" src="debug/debug.js"></script>
@@ -51,7 +54,7 @@
 
         var i = 0;
         var letter = '';
-        event.rows.sort().forEach( function(val) {
+        event.rows.forEach( function(val) {
           i++;
           if ( letter != val[0] ) {
             if ( letter )
@@ -59,17 +62,11 @@
             letter = val[0];
           }
 
-          if ( val )
-            var anchor = $('<a href="#">').text(val);
-          else
-            var anchor = $('<a href="#">').html('<i>пусто</i>');
-
-//        jQuery.data(anchor, "val", val);
+          var anchor = val ? $('<a href="#">').text(val) :
+                             $('<a href="#">').html('<i>пусто</i>');
 
           anchor.click( function(event) {
             $('#values_list').text('');
-
-//          val = jQuery.data(anchor, "val");
 
             selected_table  = val;
             selected_column = '';
@@ -94,10 +91,8 @@
         event.rows.forEach( function(val) {
           i++;
 
-          if ( val )
-            var anchor = $('<a href="#">').text(val);
-          else
-            var anchor = $('<a href="#">').html('<i>пусто</i>');
+          var anchor = val ? $('<a href="#">').text(val) :
+                             $('<a href="#">').html('<i>пусто</i>');
 
           anchor.click( function(event) {
             selected_column = val;
@@ -122,10 +117,8 @@
         event.rows.forEach( function(val) {
           i++;
 
-          if ( val )
-            var anchor = $('<a href="#">').text(val);
-          else
-            var anchor = $('<a href="#">').html('<i>пусто</i>');
+          var anchor = val ? $('<a href="#">').text(val) :
+                             $('<a href="#">').html('<i>пусто</i>');
 
           anchor.click( function(event) {
             selected_value  = val;
@@ -154,32 +147,32 @@
 
 
 <table width="100%" cellpadding="0" cellspacing="0" border="1">
-	<thead></thead>
-	<tbody>
-	  <tr>
-	    <td>Таблицы:</td>
-	    <td id="tables_count"></td>
-	    <td id="tables_list"></td>
-	  </tr>
-	  <tr>
-	    <td>Колонки:</td>
-	    <td id="columns_count"></td>
-	    <td id="columns_list"></td>
-	  </tr>
-	  <tr>
-	    <td>Значения:</td>
-	    <td id="values_count"></td>
-	    <td id="values_list"></td>
-	  </tr>
+  <thead></thead>
+  <tbody>
+    <tr>
+      <td>Таблицы:</td>
+      <td id="tables_count"></td>
+      <td id="tables_list"></td>
+    </tr>
+    <tr>
+      <td>Колонки:</td>
+      <td id="columns_count"></td>
+      <td id="columns_list"></td>
+    </tr>
+    <tr>
+      <td>Значения:</td>
+      <td id="values_count"></td>
+      <td id="values_list"></td>
+    </tr>
   </tbody>
-	<tfoot></tfoot>
+  <tfoot></tfoot>
 </table>
 
 
 <table id="table" width="100%" cellpadding="0" cellspacing="0" border="1">
-	<thead></thead>
-	<tbody></tbody>
-	<tfoot></tfoot>
+  <thead></thead>
+  <tbody></tbody>
+  <tfoot></tfoot>
 </table>
 
 

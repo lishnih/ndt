@@ -24,7 +24,7 @@ function build_tabs(tabs_id, table_id) {
     var ul = $('ul', self);
   
     var i = sys_tabs;
-    event.rows.sort().forEach( function(val) {
+    event.rows.forEach( function(val) {
       val2 = val.replace('.', '_');
       ul.append('<li><input class="append_table" type="checkbox" value="' + val + '"><a href="#' + val2 + '">' + val2 + '</a></li>');
       tabs.append('<div id="' + val2 + '">' + val + '</div>');
@@ -47,12 +47,12 @@ function build_tabs(tabs_id, table_id) {
 
     // Инициализируем (именно после цикла event.rows)
   	tabs.tabs({
-  		ajaxOptions: {
-  			error: function(xhr, status, index, anchor) {
-  				$(anchor.hash).text("Хм, странно! Куда подевался этот таб?...");
-  			}
-  		},
-  	});
+      ajaxOptions: {
+        error: function(xhr, status, index, anchor) {
+          $(anchor.hash).text("Хм, странно! Куда подевался этот таб?...");
+        }
+      },
+    });
   } );
 
 
@@ -63,7 +63,7 @@ function build_tabs(tabs_id, table_id) {
     // ui.panel   // element, that contains the selected/clicked tab contents
     // ui.index   // zero-based index of the selected (clicked) tab
 
-//     debug();      // Очищаем поток
+    debug();      // Очищаем поток
 
     // При выборе новой вкладки сбрасываем все checkbox'ы
     $(".append_table").attr('checked', false);
