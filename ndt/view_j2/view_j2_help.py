@@ -2,8 +2,8 @@
 # coding=utf-8
 # Stan 2012-02-29
 
-from ..request_interface import *
-from ..response_interface import *
+from .request_interface import *
+from .response_interface import *
 
 
 def actions_list_action(request_items, response):
@@ -12,9 +12,9 @@ def actions_list_action(request_items, response):
         'action_params_list',
         'tables_list',
         'columns_list',
-#       'table_info',
         'table_count',
         'table_view',
+        'column_sum',
         'column_district',
     ]
 
@@ -41,21 +41,21 @@ def action_params_list_action(request_items, response):
         response['description'] = u'Список колонок в таблице/таблицах'
         response['rows'] = ['table', 'tables', 'fullnames']
 
-#   elif req_action == 'table_info':
-#       response['description'] = u'Информация о таблице'
-#       response['rows'] = ['table']
-
     elif req_action == 'table_count':
         response['description'] = u'Количество рядов в таблице/нескольких таблицах (связанных между собой)'
         response['rows'] = ['table', 'tables', 'search', 'filter_json']
 
     elif req_action == 'table_view':
         response['description'] = u'Вывод таблицы/нескольких таблиц (связанных между собой)'
-        response['rows'] = ['table', 'tables', 'offset', 'limit', 'columns', 'columns_except', 'search', 'filter_json']
+        response['rows'] = ['table', 'tables', 'search', 'offset', 'limit', 'columns', 'filter_json', 'sorting_json']
+
+    elif req_action == 'column_sum':
+        response['description'] = u'Сумма значений поля в таблице/нескольких таблицах (связанных между собой)'
+        response['rows'] = ['table', 'tables', 'column', 'search', 'filter_json']
 
     elif req_action == 'column_district':
         response['description'] = u'Вывод среза значений заданной колонки таблицы'
-        response['rows'] = ['table', 'column', 'filter', 'offset', 'limit']
+        response['rows'] = ['table', 'tables', 'column', 'search', 'offset', 'limit', 'filter_json', 'sorting_json']
 
     else:
         return response_with_message(response, u'Неизвестная команда!', 'error')

@@ -45,7 +45,15 @@ th {
 
 td {
   vertical-align: top;
-  padding: .3em 1em;
+  padding: .2em .8em;
+}
+
+.a {
+  color: Navy;
+}
+
+.a_selected {
+  background-color: #bbf;
 }
 
 .highlighted {

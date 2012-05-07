@@ -3,55 +3,9 @@
 # Stan 2012-02-06
 
 from ..security_db import user_table_iter
-from ..request_interface import *
-from ..response_interface import *
+from .request_interface import *
+from .response_interface import *
 from .query_interface import *
-
-
-def prepare_response(request):
-    response = dict(
-        version = 2,
-        request_get  = repr(request.GET),
-        request_post = repr(request.POST),
-    )
-
-    response['rows']   = []
-    response['aaData'] = []
-
-    return response
-
-
-def get_action(request, response):
-    request_items = None
-    action = None
-
-    if   'action' in request.POST:
-        request_items = request.POST
-    elif 'action' in request.GET:
-        request_items = request.GET
-
-    if request_items:
-        response['action'] = ri_get_str(request_items, 'action')
-        action = response['action']
-
-        if 'sEcho' in request_items:
-            response['sEcho'] = ri_get_int(request_items, 'sEcho', 1)
-
-    return action, request_items
-
-
-def response_with_message(response, msg, msg_type='info'):
-    if not response['rows']:
-        response['rows'].append(msg)
-    if not response['aaData']:
-        response['iTotalRecords']        = 1
-        response['iTotalDisplayRecords'] = 1
-        response['aaData'] = [['' for i in range(20)]]
-        response['aaData'][0][0] = msg
-    if msg_type:
-        response[msg_type] = msg
-
-    return response
 
 
 # !!! Если базы не загружены возращает пустой результат
@@ -70,17 +24,13 @@ def columns_list_action(userid, request_items, response):
     if not tables[0]:
         return response_with_message(response, u'Таблица не задана!', 'error')
 
-    fullnames_option = ri_get_int(request_items, 'fullnames')
+    fullnames = ri_get_int(request_items, 'fullnames')
     if len(tables) > 1:
-        fullnames_option = 1
+        fullnames = 1
 
-    columns_list = qi_columns_list(userid, tables, fullnames_option)
+    columns_list = qi_columns_list(userid, tables, fullnames)
 
     response['rows'] = columns_list
-
-
-# def table_info_action(userid, request_items, response):
-#   pass
 
 
 def table_count_action(userid, request_items, response):
@@ -100,7 +50,75 @@ def table_count_action(userid, request_items, response):
         filter = filter_dict,
     )
 
-    table_info, error = qi_query(**query_params)
+    table_info, error = qi_query_count(**query_params)
+
+    response.update(table_info)
+    response['query_params'] = query_params
+    if error:
+        response['error'] = error
+
+
+def column_func_action(userid, request_items, response):
+    tables = ri_get_str(request_items, 'table'),    # запятая в конце - это Tuple!
+    tables = ri_get_tuple(request_items, 'tables', tables)
+
+    if not tables[0]:
+        return response_with_message(response, u'Таблица не задана!', 'error')
+
+    column = ri_get_str(request_items, 'column')
+
+    if not column:
+        return response_with_message(response, u'Колонка не задана!', 'error')
+
+    operand = ri_get_str(request_items, 'func')
+
+    if not func:
+        return response_with_message(response, u'Функция не задана!', 'error')
+
+    search = ri_get_str(request_items, 'search')    # Строка для поиска
+    filter_dict = ri_get_obj(request_items, 'filter_json')
+
+    query_params = dict(
+        userid  = userid,
+        tables  = tables,
+        column  = column,
+        operand = operand,
+        search  = search,
+        filter  = filter_dict,
+    )
+
+    table_info, error = qi_query_column(**query_params)
+
+    response.update(table_info)
+    response['query_params'] = query_params
+    if error:
+        response['error'] = error
+
+
+def column_sum_action(userid, request_items, response):
+    tables = ri_get_str(request_items, 'table'),    # запятая в конце - это Tuple!
+    tables = ri_get_tuple(request_items, 'tables', tables)
+
+    if not tables[0]:
+        return response_with_message(response, u'Таблица не задана!', 'error')
+
+    column = ri_get_str(request_items, 'column')
+
+    if not column:
+        return response_with_message(response, u'Колонка не задана!', 'error')
+
+    search = ri_get_str(request_items, 'search')    # Строка для поиска
+    filter_dict = ri_get_obj(request_items, 'filter_json')
+
+    query_params = dict(
+        userid = userid,
+        tables = tables,
+        column = column,
+        search = search,
+        filter = filter_dict,
+    )
+
+    table_info, error = qi_query_sum(**query_params)
 
     response.update(table_info)
     response['query_params'] = query_params
@@ -115,15 +133,13 @@ def table_view_action(userid, request_items, response):
     if not tables[0]:
         return response_with_message(response, u'Таблица не задана!', 'error')
 
-    import logging; logging.warning(request_items)
-
     offset = ri_get_int(request_items, 'offset')      # Требуемый первый ряд
-    limit  = ri_get_int(request_items, 'limit', 200)  # Требуемое кол-во рядов
-    search = ri_get_str(request_items, 'sSearch')     # Строка для поиска
+    limit  = ri_get_int(request_items, 'limit', 100)  # Требуемое кол-во рядов
+    search = ri_get_str(request_items, 'search')      # Строка для поиска
+    search = ri_get_str(request_items, 'sSearch', search) # Строка для поиска
 
-    #
     columns_tuple = ri_get_tuple(request_items, 'columns')
-#   columns_except_tuple = ri_get_tuple(request_items, 'columns_except')
+    distinct_column = ri_get_str(request_items, 'distinct_column')
 
     # Если заданы короткие имена колонок - добавляем к ним название первой таблицы
     table = tables[0]
@@ -131,11 +147,6 @@ def table_view_action(userid, request_items, response):
     for i in range(len(columns)):
         if '.' not in columns[i]:
             columns[i] = u'{}.{}'.format(table, columns[i])
-
-#   columns_except = list(columns_except_tuple)
-#   for i in range(len(columns_except)):
-#       if '.' not in columns_except[i]:
-#           columns_except[i] = u'{}.{}'.format(table, columns_except[i])
 
     filter_dict  = ri_get_obj(request_items, 'filter_json')
     sorting_dict = ri_get_obj(request_items, 'sorting_json')
@@ -149,7 +160,7 @@ def table_view_action(userid, request_items, response):
         offset  = offset,
         limit   = limit,
         columns = columns,
-#       columns_except = columns_except,
+        distinct_column = distinct_column,
     )
 
     table_info, rows, error = qi_query(**query_params)
@@ -169,34 +180,47 @@ def table_view_action(userid, request_items, response):
 
 
 def column_district_action(userid, request_items, response):
-    table = ri_get_str(request_items, 'table')
+    tables = ri_get_str(request_items, 'table'),    # запятая в конце - это Tuple!
+    tables = ri_get_tuple(request_items, 'tables', tables)
+
+    if not tables[0]:
+        return response_with_message(response, u'Таблица не задана!', 'error')
+
     column = ri_get_str(request_items, 'column')
 
-    offset_option = ri_get_int(request_items, 'offset')
-    limit_option  = ri_get_int(request_items, 'limit', 200)
+    if not column:
+        return response_with_message(response, u'Колонка не задана!', 'error')
 
-    filter_dict = ri_get_obj(request_items, 'filter_json')
+    offset = ri_get_int(request_items, 'offset')      # Требуемый первый ряд
+    limit  = ri_get_int(request_items, 'limit', 100)  # Требуемое кол-во рядов
+    search = ri_get_str(request_items, 'search')      # Строка для поиска
+    search = ri_get_str(request_items, 'sSearch', search) # Строка для поиска
+
+    filter_dict  = ri_get_obj(request_items, 'filter_json')
+    sorting_dict = ri_get_obj(request_items, 'sorting_json')
 
     query_params = dict(
-        userid = userid,
-        table  = table,
-        column = column,
-        filter = filter_dict,
-        offset = offset_option,
-        limit  = limit_option,
+        userid  = userid,
+        tables  = tables,
+        search  = search,
+        filter  = filter_dict,
+        sorting = sorting_dict,
+        offset  = offset,
+        limit   = limit,
+        distinct_column = column,
     )
 
-    column_info, rows, error = qi_district_query(**query_params)
+    table_info, rows, error = qi_query(**query_params)
 
-    response.update(column_info)
+    response.update(table_info)
     response['query_params'] = query_params
 
     if 'sEcho' in response:
-        response['iTotalRecords']        = column_info['full_rows_count']
-        response['iTotalDisplayRecords'] = column_info['filtered_rows_count']
-        response['aaData'] = [[i] for i in rows]
+        response['iTotalRecords']        = table_info['full_rows_count']
+        response['iTotalDisplayRecords'] = table_info['filtered_rows_count']
+        response['aaData'] = rows
     else:
-        response['rows'] = rows
+        response['rows'] = [row[0] for row in rows]
 
     if error:
         response['error'] = error

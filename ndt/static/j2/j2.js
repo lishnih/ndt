@@ -12,7 +12,7 @@ function request_action(action, options, success_callback, async) {
   var data_array = $.extend({action: action}, options);
   $.ajax({
     url: json_url,
-    type: "GET",      // !!! POST не получается!
+    type: "GET",      // !!! POST не получается?!
     data: data_array,
     dataType: "json",
     cache: false,
@@ -21,13 +21,13 @@ function request_action(action, options, success_callback, async) {
       xhr.setRequestHeader("Content-type", "application/json; charset=utf-8");
     },
     success: function(event, xhr, ajaxOptions) {
-      if (typeof event.debug     != "undefined")
+      if (typeof event.debug   != "undefined")
         debug(event.debug);
-      if (typeof event.info      != "undefined")
+      if (typeof event.info    != "undefined")
         debug(event.info);
-      if (typeof event.warning   != "undefined")
+      if (typeof event.warning != "undefined")
         debug(event.warning);
-      if (typeof event.error     != "undefined")
+      if (typeof event.error   != "undefined")
         debug(event.error);
       if (typeof event.exception != "undefined") {
         debug(event);
@@ -36,7 +36,7 @@ function request_action(action, options, success_callback, async) {
 
       success_callback.call(this, event, xhr, ajaxOptions);
     }
-  })
+  });
 }
 
 
@@ -44,83 +44,161 @@ jQuery.fn.extend({
 
 
   // Запрашивает действие 'action' с опциями 'options'
-  // Полученный ответ передаёт в функцию callback, возвращённое значение
+  // Полученный ответ передаёт в функцию success_callback, возвращённое значение
   // присваивается вызываемому элементу/элементам
-  put_action: function(action, options, callback) {
+  put_action: function(action, options, success_callback) {
     return this.each( function() {
       var self = this;
 
-      request_action(action, options, function (event, xhr, ajaxOptions) {
-        content = callback.call(this, event, self);
+      request_action(action, options, function(event, xhr, ajaxOptions) {
+        content = success_callback.call(this, event, self);
         if (typeof content != "undefined")
-          self.innerHTML = content
+          self.innerHTML = content;
       } );
 
     } );
   },
 
 
-  put_table: function(table, columns, filter) {
+  put_count: function(table, filter) {
     return this.each( function() {
       var self = this;
-      var jself = $(self);
+
+      var filter_json = $.toJSON(filter);
+      var options = {tables: table, filter_json: filter_json};
+      request_action('table_count', options, function(event, xhr, ajaxOptions) {
+        if (typeof event.filtered_rows_count == "undefined")
+          self.innerHTML = "<i>недоступно</i>";
+        else
+          self.innerHTML = event.filtered_rows_count;
+      } );
+
+    } );
+  },
+
+
+  put_column_func: function(table, column, func, filter) {
+    return this.each( function() {
+      var self = this;
+
+      var filter_json = $.toJSON(filter);
+      var options = {tables: table, column: column,
+                     func: func, filter_json: filter_json};
+      request_action('column_func', options, function(event, xhr, ajaxOptions) {
+        if (typeof event.sum == "undefined")
+          self.innerHTML = "<i>недоступно</i>";
+        else
+          self.innerHTML = event.sum;   // !!!
+      } );
+
+    } );
+  },
+
+
+  put_sum: function(table, column, filter) {
+    return this.each( function() {
+      var self = this;
+
+      var filter_json = $.toJSON(filter);
+      var options = {tables: table, column: column, filter_json: filter_json};
+      request_action('column_sum', options, function(event, xhr, ajaxOptions) {
+        if (typeof event.sum == "undefined")
+          self.innerHTML = "<i>недоступно</i>";
+        else
+          self.innerHTML = event.sum;
+      } );
+
+    } );
+  },
+
+
+  put_table: function(tables, columns, filter, sorting, append_options) {
+    if (typeof tables  == "undefined")
+      tables  = '';
+    if (typeof columns == "undefined")
+      columns = '';
+    if (typeof filter  == "undefined" | !filter)
+      filter  = {};
+    if (typeof sorting == "undefined" | !sorting)
+      sorting = [];
+    if (typeof append_options == "undefined" | !append_options)
+      append_options = {};
+
+    return this.each( function() {
+      var self = this;
 
       var table_id = self.id;
       var table_info_id = table_id + '_info';
 
-      var filter_json = $.toJSON(filter);
-      options = {tables: table, filter_json: filter_json};
+      var jtable = $(self);
+      var jtable_info = $('#' + table_info_id);
+
+      var filter_json  = $.toJSON(filter);
+      var sorting_json = $.toJSON(sorting);
+      var options = {tables: tables, columns: columns,
+                     filter_json: filter_json, sorting_json: sorting_json};
+
+      if (append_options)
+        options = $.extend(options, append_options)
+
       request_action('table_view', options, function(event, xhr, ajaxOptions) {
 
-        jself.html('');
+        jtable.html('');
+        jtable_info.html('');
+
+        if (!tables) {
+          jtable_info.html('Таблица не задана!');
+          return;
+        }
       
         var tableisempty = true;
       
         if (typeof event.columns != "undefined") {
           tableisempty = false;
-          jself.append('<thead><tr>');
+          jtable.append('<thead><tr>');
           event.columns.forEach( function(val) {
             $("thead tr", self).append('<th>' + val + '</th>');
-          } )
+          } );
         }
       
         if (typeof event.rows != "undefined") {
           tableisempty = false;
-          jself.append('<tbody>');
+          jtable.append('<tbody>');
           var i = 0;
           event.rows.forEach( function(tr_vals) {
             $("tbody", self).append('<tr id="tr' + i + '">');
             tr_vals.forEach( function(val) {
-              $(" tbody tr#tr" + i, self).append('<td>' + val + '</td>');
-            } )
+              $("tbody tr#tr" + i, self).append('<td>' + val + '</td>');
+            } );
             i++;
-          } )
+          } );
+          update_gtb();
         }
       
-        if ( tableisempty ) {
-          $(table).html('Данные отсутствуют!');
+        if (tableisempty) {
+          jtable_info.html('Данные отсутствуют!');
           return;
         }
 
-        jself.tablesorter({debug: true, widgets: ['zebra']});
-        jself.click( function(event) {
+        jtable.tablesorter({debug: true, widgets: ['zebra']});
+        jtable.click( function(event) {
           onTdClick(event, function(target) {
             target_tr = target.parentNode;
             $(target_tr).toggleClass('highlighted');
           } );
-        });
-        jself.addClass('tablesorter');
+        } );
+        jtable.addClass('tablesorter');
 
-        if ( event.filtered_rows_count == event.full_rows_count )
-          $('#' + table_info_id)
+        if (event.filtered_rows_count == event.full_rows_count)
+          jtable_info
             .text('Показано: {0} из {1}'
-            .format(event.rows_count, event.filtered_rows_count, event));
+            .format(event.rows_count, event.filtered_rows_count));
         else
-          $('#' + table_info_id)
+          jtable_info
             .text('Показано: {0} из {1} (до фильтрации: {2})'
             .format(event.rows_count, event.filtered_rows_count, event.full_rows_count));
 
-      });
+      } );
 
     } );
   },
@@ -131,7 +209,7 @@ jQuery.fn.extend({
     if (typeof columns == "undefined" | !columns) {
       columns = [];
       options = {tables: table, fullnames: 1};
-      request_action('columns_list', options, function (event) {
+      request_action('columns_list', options, function(event) {
         columns = event.rows;
       }, false);
     }
@@ -164,24 +242,22 @@ jQuery.fn.extend({
       thead.append(head_tr);
       tfoot.append(foot_tr);
 
-      $("input", tfoot).focus( function () {
-          if ( this.className == "search_init" )
-          {
-              this.className = "";
-              this.value = "";
-          }
+      $("input", tfoot).focus( function() {
+        if (this.className == "search_init") {
+          this.className = "";
+          this.value = "";
+        }
       } );
        
-      $("input", tfoot).blur( function (i) {
-          if ( this.value == "" )
-          {
-              this.className = "search_init";
-              this.value = $("input", tfoot).index(this);
-          }
+      $("input", tfoot).blur( function(i) {
+        if (this.value == "") {
+          this.className = "search_init";
+          this.value = $("input", tfoot).index(this);
+        }
       } );
 
       // Загружаем таблицу
-      oTable = jself.dataTable( {
+      oTable = jself.dataTable({
         "bJQueryUI": true,
         "sDom": '<"H"lfrip>t<"F"><"clear">T<"clear">',
 
@@ -201,11 +277,9 @@ jQuery.fn.extend({
         "aLengthMenu": [[10, 20, 50, 100, -1], [10, 20, 50, 100, "Все"]],
         "sPaginationType": "full_numbers",
 
-
         "oLanguage": {
             "sSearch": "Поиск"
         },
-
 
         // Передаём для обработки следующие данные
 //         for(var i=0; i<objCols.length; i++) {
@@ -213,10 +287,12 @@ jQuery.fn.extend({
 //         }
 //         //endFor
 //         aoData.push({ "name": "sColNames", "value": arrCols.join("|") });
+
         "oSearch": {
           "sSearch": search,
         },
-        "fnServerParams": function ( aoData ) {
+
+        "fnServerParams": function(aoData) {
           var iDisplayStart  = this.fnSettings()._iDisplayStart;
           var iDisplayLength = this.fnSettings()._iDisplayLength;
 //        var sSearch        = this.fnSettings()._sSearch;
@@ -230,13 +306,13 @@ jQuery.fn.extend({
 //        aoData.push( { "name": "search", "value": sSearch } );
         },
 
-        "fnServerData": function ( sSource, aoData, fnCallback ) {
+        "fnServerData": function(sSource, aoData, fnCallback) {
 //        debug(aoData);
 
           var sorting = [];
           var objSorts = this.fnSettings().aaSorting;
 
-          for(var i = 0; i < objSorts.length; i++) {
+          for (var i = 0; i < objSorts.length; i++) {
               cur = objSorts[i]
               column_name = columns[cur[0]];
               column_dir  = cur[1];
@@ -246,8 +322,8 @@ jQuery.fn.extend({
           var sorting_json = $.toJSON(sorting);
           aoData.push( { "name": "sorting_json", "value": sorting_json } );
 
-//           request_action("table_view", aoData, fnCallback);
-          $.ajax( {
+//        request_action("table_view", aoData, fnCallback);
+          $.ajax({
             url: sSource, 
             type: "GET", 
             data: aoData, 
@@ -260,12 +336,25 @@ jQuery.fn.extend({
 //            debug(event);
               fnCallback.call(this, event, xhr, ajaxOptions);
             }
-          } );
+          });
         }
-      } );
+      });
 //    oTable.fnDestroy();
     } );
   },
 
 
 });
+
+
+function onTdClick(event, callback) {
+  event = event || window.event;
+  var target = event.target || event.srcElement;
+
+  while(target != this) { // ( ** )
+    if (target.tagName == 'TD') { // ( * )
+       callback.call(this, target);
+    }
+    target = target.parentNode;
+  }
+}

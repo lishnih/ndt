@@ -32,3 +32,24 @@ def ri_get_obj(request_items, name, default = {}):
         return json.loads(atom_json)
     except ValueError, e:
         return default
+
+
+def get_action(request, response=None):
+    action = None
+    request_items = None
+
+    if   'action' in request.POST:
+        request_items = request.POST
+    elif 'action' in request.GET:
+        request_items = request.GET
+
+    if request_items:
+        action = ri_get_str(request_items, 'action')
+
+        if response:
+            response['action'] = action
+
+            if 'sEcho' in request_items:
+                response['sEcho'] = ri_get_int(request_items, 'sEcho', 1)
+
+    return action, request_items

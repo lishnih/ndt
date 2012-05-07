@@ -33,6 +33,8 @@
   <link type="text/css" rel="stylesheet" href="gtb_pos/default.css" />
   <script type="text/javascript" src="gtb_pos/gtb_pos.js"></script>
 
+  <script type="text/javascript" src="js/string.format-1.0.packed.js"></script>
+
   <link type="text/css" rel="stylesheet" href="j2/default.css" />
   <script type="text/javascript" src="j2/j2.js"></script>
 
@@ -87,6 +89,16 @@
         td = $(self);
         td.text('');
 
+        // Линк на показ всей таблицы
+        var anchor = $('<a href="#">').html('<b>Показать</b>');
+
+        anchor.click( function(event) {
+          $('#values_list').text('');
+          $('#table').put_table(selected_table);
+        } );
+
+        td.append(anchor).append('; ');
+
         var i = 0;
         event.rows.forEach( function(val) {
           i++;
@@ -121,13 +133,13 @@
                              $('<a href="#">').html('<i>пусто</i>');
 
           anchor.click( function(event) {
-            selected_value  = val;
+            selected_value = val;
 
-            td.html('<i>скрыто</i>');
+            td.html('<i>' + val + '</i>');
 
             filter = {};
             filter[selected_column] = selected_value;
-            $('#table').put_datatable(selected_table, '', filter);
+            $('#table').put_table(selected_table, '', filter);
           } );
 
           td.append(anchor).append('; ');
@@ -145,6 +157,8 @@
 
 <div id="top"></div>
 
+
+<a style="float: right" href="view_column_distinct_data.html">Переключиться</a>
 
 <table width="100%" cellpadding="0" cellspacing="0" border="1">
   <thead></thead>
@@ -169,11 +183,13 @@
 </table>
 
 
-<table id="table" width="100%" cellpadding="0" cellspacing="0" border="1">
+<table id="table" width="100%" cellpadding="0" cellspacing="0" border="0">
   <thead></thead>
   <tbody></tbody>
   <tfoot></tfoot>
 </table>
+
+<div id="table_info"></div>
 
 
 <div id="bottom"></div>

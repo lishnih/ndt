@@ -45,14 +45,17 @@ def view_j2(request):
     elif action == 'columns_list':
         columns_list_action(logged_in, request_items, response)
 
-#   elif action == 'table_info':
-#       table_info_action(logged_in, request_items, response)
-
     elif action == 'table_count':
         table_count_action(logged_in, request_items, response)
 
     elif action == 'table_view':
         table_view_action(logged_in, request_items, response)
+
+    elif action == 'column_func':
+        column_func_action(logged_in, request_items, response)
+
+    elif action == 'column_sum':
+        column_sum_action(logged_in, request_items, response)
 
     elif action == 'column_district':
         column_district_action(logged_in, request_items, response)
