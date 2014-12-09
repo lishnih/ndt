@@ -1,0 +1,3 @@
+[submodule "ndt/static/debug"]
+	path = ndt/static/debug
+	url = git@bitbucket.org:lishnih/jdebug.git
